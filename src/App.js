@@ -1,24 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import TodoList from './components/TodoList';
 
 function App() {
   // implementing useState hook 
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState([]);
+  useEffect(() => {
+    // get items from the local storage
+    const savedTodos = localStorage.getItem('todos');
+    console.log(savedTodos);
+    // if line 11 requirements are met, set the saved todos to the state
+    if(savedTodos && savedTodos !== 'undefined' && savedTodos !== null){
+      setTodos(JSON.parse(savedTodos));
+    }
+  },[]);
 
   const addTodo = (e) => {
+    // checks if the input is empty
     if (e.target.value === "") return;
     // create a todo object
-    const newToDo = {
+    const newTodo = {
       text: e.target.value,
       id: Date.now(),
       completed: false
-    }
+    };
+    localStorage.setItem('todos', JSON.stringify([newTodo, ...todos]));
     // add new todo to the array
-    setTodos([...todos, newToDo])
+    setTodos([...todos, newTodo])
     // reset the input 
     e.target.value = "";
-  }
+  };
 
   const completeTodo = (id, e) => {
     // creating a new copy of todos array
@@ -27,6 +38,9 @@ function App() {
     const indexOfTodo = todosCopy.findIndex(i => i.id === id)
     // updating the completed value to the opposite
     todosCopy[indexOfTodo].completed = !todosCopy[indexOfTodo].completed
+    // set the new data into the local storage
+    localStorage.setItem('todos', JSON.stringify([...todosCopy]));
+    // updating state after side effect
     setTodos([...todosCopy]);
   };
 
@@ -34,7 +48,8 @@ function App() {
     const todosCopy = [...todos];
     const indexOfTodo = todosCopy.findIndex(i => i.id === id);
     todosCopy.splice(indexOfTodo, 1);
-    setTodos([...todosCopy])
+    localStorage.setItem('todos', JSON.stringify([...todosCopy]) );
+    setTodos([...todosCopy]);
   }
 
   const editTodoText = (id, e) => {
@@ -42,6 +57,7 @@ function App() {
     const todosCopy = [...todos];
     const indexOfTodo = todosCopy.findIndex(i => i.id === id);
     todosCopy[indexOfTodo].text = e.target.value;
+    localStorage.setItem('todos', JSON.stringify([...todosCopy]))
     setTodos([...todosCopy]);
     e.target.value = "";
   }
